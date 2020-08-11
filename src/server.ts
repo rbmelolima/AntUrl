@@ -1,11 +1,10 @@
 import express from 'express';
+import routes from './routes';
 
 const app = express();
+export const port = 3333;
 
-const port = 3333;
+app.use(express.json());
+app.use(routes);
 
-app.get('/', (req, res) => {
-  res.send('Hello world');
-});
-
-app.listen(port, () => console.log("Server is running"));
+app.listen(port, () => console.log(`Server is running, port: ${port}`));
