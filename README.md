@@ -33,10 +33,10 @@ export default auth;
 
 | Método  | Rota  | Descrição  |
 | :------------ | :------------ | :------------ |
-| GET  | `GET: /:shortUrl`  |  Redireciona o usuário para o link relacionado ao url minificado  |
-|  GET |  `GET: /status/:shortUrl`  |  Retorna quantas vezes a url minificada foi clicada |
-|  GET |   `GET: /`  |  Lista todas as urls presentes no banco de dados para o usuário autenticado  |
-|  POST | `POST: /`  | Cria uma url minificada e retorna ao usuário  |
+| GET  | `/:shortUrl`  |  Redireciona o usuário para o link relacionado ao url minificado  |
+|  GET |  `/status/:shortUrl`  |  Retorna quantas vezes a url minificada foi clicada |
+|  GET |   `/`  |  Lista todas as urls presentes no banco de dados para o usuário autenticado  |
+|  POST | `/`  | Cria uma url minificada e retorna ao usuário  |
 
 ## Próximas features
 - [ ] Testes automatizados
