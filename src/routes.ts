@@ -5,8 +5,9 @@ const routes = express.Router();
 
 const urlShortenerController = new UrlShortener();
 
-routes.post('/ant', urlShortenerController.create);
 routes.get('/:shortUrl', urlShortenerController.redirect);
+routes.get('/status/:shortUrl', urlShortenerController.status);
 routes.get('/', urlShortenerController.list);
+routes.post('/', urlShortenerController.create);
 
 export default routes;

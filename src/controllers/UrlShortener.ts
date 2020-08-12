@@ -7,7 +7,6 @@ import auth from '../auth';
 import ProblemRequest from '../helpers/ProblemRequest';
 
 export default class UrlShortener {
-
   async create(request: Request, response: Response) {
     try {
       const { longUrl } = request.body;
@@ -17,7 +16,7 @@ export default class UrlShortener {
       }
 
       const isValidUrl = validURL(longUrl);
-     
+
       if(!isValidUrl) {
         ProblemRequest(400, 'It is not a valid url', response);
       }
@@ -31,6 +30,7 @@ export default class UrlShortener {
 
       if(!verifyUrlExistsInDatabase) {
         const now = new Date();
+
         await database('urls').insert({
           longUrl,
           shortUrl,
@@ -41,13 +41,13 @@ export default class UrlShortener {
       else {
         shortUrl = verifyUrlExistsInDatabase.shortUrl;
       }
- 
+
       return response.status(200).json({
         shortUrl: `http://localhost:${ port }/${ shortUrl }`
       });
 
     } catch(error) {
-      ProblemRequest(400, error, response);
+      ProblemRequest(400, 'Unexpected error', response);
     }
   }
 
@@ -99,6 +99,31 @@ export default class UrlShortener {
       ProblemRequest(400, 'Unexpected error', response);
     }
   }
-  
+
+  async status(request: Request, response: Response) {
+    try {
+      const { shortUrl } = request.params;
+
+      const status = await database('urls')
+        .first()
+        .column('cliked')
+        .where('shortUrl', '=', shortUrl);
+
+      if(status === undefined) {
+        ProblemRequest(404, 'Not found', response);
+      }
+
+      const { cliked } = status;
+
+      return response.status(200).json({
+        shortUrl,
+        cliked
+      });
+
+    } catch(error) {
+      ProblemRequest(400, 'Unexpected error', response);
+    }
+  }
+
 }
 
