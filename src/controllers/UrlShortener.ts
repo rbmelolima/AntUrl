@@ -4,43 +4,50 @@ import generateHash from '../utils/generateHash';
 import database from '../database/connection';
 import { port } from '../server';
 import auth from '../auth';
+import ProblemRequest from '../helpers/ProblemRequest';
 
 export default class UrlShortener {
+
   async create(request: Request, response: Response) {
     try {
-      const { long_url } = request.body;
+      const { longUrl } = request.body;
 
-      if(!long_url) {
-        return response.status(400).json({
-          error: "Missing long_url param"
-        });
+      if(!longUrl) {
+        ProblemRequest(400, 'Missing longUrl param', response);
       }
 
-      const isValidUrl = validURL(long_url);
-      console.log("Verifica se a url é válida", isValidUrl);
-
+      const isValidUrl = validURL(longUrl);
+     
       if(!isValidUrl) {
-        return response.status(400).json({
-          error: "It is not a valid url"
+        ProblemRequest(400, 'It is not a valid url', response);
+      }
+
+      const verifyUrlExistsInDatabase = await database('urls')
+        .first()
+        .column('shortUrl')
+        .where('longUrl', '=', longUrl);
+
+      let shortUrl = generateHash();
+
+      if(!verifyUrlExistsInDatabase) {
+        const now = new Date();
+        await database('urls').insert({
+          longUrl,
+          shortUrl,
+          created_at: now.toLocaleDateString()
         });
       }
 
-      const shortUrl = generateHash();
-
-      await database('urls').insert({
-        longUrl: long_url,
-        shortUrl
-      });
-
+      else {
+        shortUrl = verifyUrlExistsInDatabase.shortUrl;
+      }
+ 
       return response.status(200).json({
         shortUrl: `http://localhost:${ port }/${ shortUrl }`
       });
 
     } catch(error) {
-      return response.status(400).json({
-        'message': 'Unexpected error',
-        'error': error
-      });
+      ProblemRequest(400, error, response);
     }
   }
 
@@ -50,22 +57,23 @@ export default class UrlShortener {
 
       const url = await database('urls')
         .first()
-        .column('longUrl')
+        .column('longUrl', 'cliked')
         .where('shortUrl', '=', shortUrl);
 
+      const { longUrl, cliked } = url;
+
       if(url === undefined) {
-        return response.status(404).send();
+        ProblemRequest(404, 'Not found', response);
       }
 
-      const { longUrl } = url;
+      await database('urls')
+        .where('shortUrl', '=', shortUrl)
+        .update({ cliked: cliked + 1 });
 
       return response.redirect(longUrl);
     }
     catch(error) {
-      return response.status(400).json({
-        'message': 'Unexpected error',
-        'error': error
-      });
+      ProblemRequest(400, error, response);
     }
   }
 
@@ -82,18 +90,15 @@ export default class UrlShortener {
         .select('*');
 
       if(allUrls.length <= 0) {
-        return response.status(204).json({
-          'message': 'Empty'
-        });
+        ProblemRequest(204, 'Empty', response);
       }
 
       return response.json(allUrls);
 
     } catch(error) {
-      return response.status(400).json({
-        'message': 'Unexpected error',
-        'error': error
-      });
+      ProblemRequest(400, 'Unexpected error', response);
     }
   }
+  
 }
+

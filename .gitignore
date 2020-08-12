@@ -1,2 +1,3 @@
 node_modules
 src/auth.ts
+src/database/database.sqlite

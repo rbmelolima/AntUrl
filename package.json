@@ -2,7 +2,7 @@
   "name": "anturl",
   "version": "1.0.0",
   "description": "url shortener",
-  "main": "index.js",
+  "main": "./src/server.ts",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
